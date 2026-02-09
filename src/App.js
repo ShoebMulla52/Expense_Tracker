@@ -1,9 +1,6 @@
-
 import { useEffect, useState } from "react";
-import './App.css';
-
-
-
+import jsPDF from "jspdf";
+import "./App.css";
 
 function App() {
   const [expenseName, setExpenseName] = useState("");
@@ -12,7 +9,7 @@ function App() {
     return JSON.parse(localStorage.getItem("expenses")) || [];
   });
 
-  // Save to localStorage whenever expenses change
+  // Save expenses to localStorage
   useEffect(() => {
     localStorage.setItem("expenses", JSON.stringify(expenses));
   }, [expenses]);
@@ -42,6 +39,32 @@ function App() {
     setExpenses(expenses.filter((expense) => expense.id !== id));
   };
 
+  // 📄 Generate PDF
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Expense Report", 14, 20);
+
+    doc.setFontSize(12);
+    let yPosition = 30;
+
+    expenses.forEach((expense, index) => {
+      doc.text(
+        `${index + 1}. ${expense.name} - ₹${expense.amount.toFixed(2)}`,
+        14,
+        yPosition
+      );
+      yPosition += 8;
+    });
+
+    yPosition += 5;
+    doc.setFontSize(14);
+    doc.text(`Total: ₹${totalAmount.toFixed(2)}`, 14, yPosition);
+
+    doc.save("expenses.pdf");
+  };
+
   return (
     <div className="container">
       <h1>Expense Tracker</h1>
@@ -54,6 +77,7 @@ function App() {
           onChange={(e) => setExpenseName(e.target.value)}
           required
         />
+
         <input
           type="number"
           placeholder="Amount"
@@ -61,6 +85,7 @@ function App() {
           onChange={(e) => setExpenseAmount(e.target.value)}
           required
         />
+
         <button type="submit">Add Expense</button>
       </form>
 
@@ -70,22 +95,23 @@ function App() {
         {expenses.map((expense) => (
           <li key={expense.id}>
             {expense.name} - ₹{expense.amount.toFixed(2)}
-            <button onClick={() => deleteExpense(expense.id)}>
-              Delete
-            </button>
+            <button onClick={() => deleteExpense(expense.id)}>Delete</button>
           </li>
         ))}
       </ul>
 
       <div id="total">
-        <h3>
-          Total: ₹<span id="total-amount">{totalAmount.toFixed(2)}</span>
-        </h3>
+        <h3>Total: ₹{totalAmount.toFixed(2)}</h3>
       </div>
+
+      {expenses.length > 0 && (
+        <button className="pdf-btn" onClick={downloadPDF}>
+          Download PDF
+        </button>
+      )}
     </div>
   );
 }
 
 export default App;
-
 
