@@ -9,7 +9,7 @@ function App() {
     return JSON.parse(localStorage.getItem("expenses")) || [];
   });
 
-  // Save expenses to localStorage
+  // Save to localStorage
   useEffect(() => {
     localStorage.setItem("expenses", JSON.stringify(expenses));
   }, [expenses]);
@@ -39,15 +39,23 @@ function App() {
     setExpenses(expenses.filter((expense) => expense.id !== id));
   };
 
-  // 📄 Generate PDF
-  const downloadPDF = () => {
+  // 🕒 Date & Time
+  const getDateTime = () => {
+    return new Date().toLocaleString();
+  };
+
+  // 📄 Save as PDF
+  const saveAsPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
     doc.text("Expense Report", 14, 20);
 
+    doc.setFontSize(11);
+    doc.text(`Generated on: ${getDateTime()}`, 14, 28);
+
+    let yPosition = 40;
     doc.setFontSize(12);
-    let yPosition = 30;
 
     expenses.forEach((expense, index) => {
       doc.text(
@@ -60,7 +68,7 @@ function App() {
 
     yPosition += 5;
     doc.setFontSize(14);
-    doc.text(`Total: ₹${totalAmount.toFixed(2)}`, 14, yPosition);
+    doc.text(`Total Amount: ₹${totalAmount.toFixed(2)}`, 14, yPosition);
 
     doc.save("expenses.pdf");
   };
@@ -95,7 +103,9 @@ function App() {
         {expenses.map((expense) => (
           <li key={expense.id}>
             {expense.name} - ₹{expense.amount.toFixed(2)}
-            <button onClick={() => deleteExpense(expense.id)}>Delete</button>
+            <button onClick={() => deleteExpense(expense.id)}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>
@@ -105,8 +115,8 @@ function App() {
       </div>
 
       {expenses.length > 0 && (
-        <button className="pdf-btn" onClick={downloadPDF}>
-          Download PDF
+        <button className="pdf-btn" onClick={saveAsPDF}>
+          Save as PDF
         </button>
       )}
     </div>
@@ -114,4 +124,3 @@ function App() {
 }
 
 export default App;
-
